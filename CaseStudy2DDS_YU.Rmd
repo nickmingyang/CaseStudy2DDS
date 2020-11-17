@@ -1,0 +1,438 @@
+---
+title: "CaseStudy2DDS"
+author: "Mingyang Nick YU"
+date: "11/14/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(warning=FALSE)
+```
+
+### Introduction to the Project
+- DDSAnalytics that specializes in talent management solutions for Fortune 100 companies. This is a process of developing and retaining employees. It may include workforce planning, employee training programs, identifying high-potential employees and reducing/preventing voluntary employee turnover (attrition). To gain a competitive edge over its competition, DDSAnalytics is planning to leverage data science for talent management. The executive leadership has identified predicting employee turnover as its first application of data science for talent management. Before the business gree lights the project, they have tasked me to conduct an analysis of existing employee data.
+- I have been provided (CaseStudy2-data.csv) to do a data analysis to identify factors that lead to attrition. I need to identify the top three factors that contribute to turnover. The business is also interested in learning about any job role specific trends that may exist in the data set.
+
+### Importing Data & Initial Inspection
+- There are 870 data entries
+- There aren't any missing values
+- There are columns only have one unique value, and won't be much use for our analysis, delete column to generate cleaner dataset
+```{r}
+#Loading libraries needed
+library(tidyverse)
+library(ggplot2)
+#Loading in Employee data
+employeeData = read.csv("/Users/mingyang/Desktop/SMU/DoingDS_Fall2020/CaseStudy2DDS/CaseStudy2-data.csv",header = TRUE)
+summary(employeeData)
+
+#See which column has only unique value
+sapply(employeeData,function(col) length(unique(col)))
+
+#Delete column that has only one unique value
+to.be.deleted = which(sapply(employeeData,function(col) length(unique(col))==1))
+employeeData = employeeData[,-to.be.deleted]
+
+#observe the cleaner set again
+summary(employeeData)
+#Convert some values into factors
+cols.to.factor = c("Attrition","BusinessTravel","Department","EducationField","EnvironmentSatisfaction",
+                   "Gender","JobInvolvement","JobLevel","JobRole","JobSatisfaction","MaritalStatus","NumCompaniesWorked",
+                   "OverTime","PerformanceRating","RelationshipSatisfaction","StockOptionLevel","TrainingTimesLastYear",
+                   "WorkLifeBalance")
+employeeData[cols.to.factor] = lapply(employeeData[cols.to.factor],factor)
+str(employeeData)
+```
+
+### Analysis of factors that lead to attrition
+- 16.1% of employees left, a graph comparison is drawn
+- Seems younger people have more numbers of Attrition than older folks, they also have an overall higher proportion of leaving
+- Sales has the highest Attrition rate, while Research & Development has the lowest
+- Distance from Home doesn't seem to have a particular correlation with Attrition Rate
+- Low education Level has a higher Attrition Rate, while higher education level has lower Attrition Rate
+- Human Resources and Technical Degrees have higher Attrition Rate, while Life Sciences have the lowest Attrition Rate
+- Low environment satisfaction score of 1 has the highest attrition rate, while score of 2-4 doesn't seem to have a big differences or change of attrition rate
+- Male has a slight higher attrition rate compared to female
+- Hourly Rate don't seem to have a big effect on Attrition rate, it looks pretty random across the board
+- Job involvement levels have a great correlation with Attrition rate, the lower the Job Involvement, the higher Attrition Rate. The higher Job involvement level the lower of the attrition rate.
+- Job Level has some correlation with Attrition rate, but this relationship is not as strong as Job involvement
+- Sales Representation has a significant higher Attrition Rate, while Research Director and Manufacturing Director has significantly lower Attrition rate
+- There is a correlation between Attrition rate and Job Satisfaction score, the higher the Job Satisfaction score, the lower the Attrition rate
+- Single Marital Status has a higher Attrition Rate, while Divorced group has lowest Attrition Rate
+- Monthly Income does seem to have an overall trend of higher income associated with lower Attrition Rate. But this correlation isn't perfectly strong
+- Monthly Rate doesn't seem to have an overall trend of higher Monthly Rate associated with lower attrition rate.
+- Not super strong correlation, but it seems people have changed jobs many times, don't have problems changing again.
+- It seems people with many overtime are associated with a higher attrition rate
+- It doesn't seem percent of Salary Hike has a strong correlation with attrition rate. Even a high percentage of Salary Hike can still have a high Attrition rate
+- Performance Rating don't have a big difference in terms of Attrition rate
+- Relationship Satisfaction have a sligh correlation with the attrition rate. However, the relationship isn't super strong.
+- Stock option level of 0 and 3 has much higher attrition Rate compared to Stock option level of 1 and 2
+- In general, the more total working years, the less of a attrition rate it becomes, a lot of people start retiring after working for 30 years, almost 100% folks retire after working for 40 years
+- There seem to have an overall trend of more training in the last year, less like a person will leave, but this trend isn't perfect
+- The higher the work Life Balance Score, the lower Attrition rate it becomes
+- Within 10 years of working with the company, there seem to have an overall trend of decreasing of Attrition rate with the year increase, however between 10-20 years, the attrition rate seem to fluctuate, while a lot of folks retire after year of 25.
+- Years In current role doesn't seem to have a linear relationship but a quadratic relationship 
+- There don't seem to be any definitive relationship between years since last promotion and Attrition rate
+- There don't seem to have a definitive relationship between attrition rate and years with current manager
+
+```{r}
+# First discover the percentage of Attrition in the Dataset
+table(employeeData$Attrition) # 730 No, 140 Yes
+attrition.percent = 140/870
+attrition.percent
+# Visually look at percentage of Attrition
+employeeData %>% ggplot() + geom_bar(aes(x=Attrition),fill="light blue") +
+  ggtitle("Attrition Count comparison")+ylab("Number of Employee")
+
+# Age with Attrition
+employeeData %>% ggplot() + geom_bar(aes(x=Age,fill=Attrition)) + 
+  ggtitle("Attrition with Age")+ylab("Number of Empllyee")
+# Age with Attrition Proportion
+employeeData %>% ggplot() + geom_bar(aes(x=Age,fill=Attrition),position="fill") + 
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition with Age")+ylab("Proportion of Attrition")
+
+#Department
+employeeData %>% ggplot()+geom_bar(aes(x=Department,fill=Attrition),position="fill")+
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition rate under different Department")+ylab("Attrition Rate")
+# Distance from Home
+employeeData %>% ggplot()+ geom_bar(aes(x=DistanceFromHome,fill=Attrition),position="fill")+
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition rate under different distance from Home")+ylab("Attrition Rate")
+#Education
+employeeData %>% ggplot()+ geom_bar(aes(x=Education,fill=Attrition),position="fill")+
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition rate under different Education Level")+ylab("Attrition Rate")+xlab("Education Level")
+#Education Field
+employeeData %>% ggplot()+ geom_bar(aes(x=EducationField,fill=Attrition),position="fill")+
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition rate under different Education Field")+ylab("Attrition Rate")+xlab("Education Field")
+#Environment Satisfaction
+employeeData %>% ggplot()+ geom_bar(aes(x=EnvironmentSatisfaction,fill=Attrition),position="fill")+
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition rate under different Environment Satisfaction Score")+ylab("Attrition Rate")+xlab("Environment Satisfaction")
+# Gender
+employeeData %>% ggplot()+ geom_bar(aes(x=Gender,fill=Attrition),position="fill")+
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition rate with Gender")+ylab("Attrition Rate")+xlab("Gender")
+# Hourly Rate
+employeeData %>% ggplot()+ geom_bar(aes(x=HourlyRate,fill=Attrition),position="fill")+
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition rate under different Hourly Rate")+ylab("Attrition Rate")+xlab("Hourly Rate")
+# Job Involvement
+employeeData %>% ggplot()+ geom_bar(aes(x=JobInvolvement,fill=Attrition),position="fill")+
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition rate under different Job Involvement Levels")+
+  ylab("Attrition Rate")+xlab("Job Involvement Levels")
+# Job Level
+employeeData %>% ggplot()+ geom_bar(aes(x=JobLevel,fill=Attrition),position="fill")+
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition rate under different Job Level")+ylab("Attrition Rate")+xlab("Job Level")
+#Job Role
+employeeData %>% ggplot()+ geom_bar(aes(x=JobRole,fill=Attrition),position="fill")+
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition rate under different Job Roles")+ylab("Attrition Rate")+xlab("Job Roles")+coord_flip()
+# Job Satisfaction
+employeeData %>% ggplot()+ geom_bar(aes(x=JobSatisfaction,fill=Attrition),position="fill")+
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition rate under different Job Satisfaction Score")+ylab("Attrition Rate")+xlab("Job Satisfaction")
+
+# Marital Status
+employeeData %>% ggplot()+ geom_bar(aes(x=MaritalStatus,fill=Attrition),position="fill")+
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition rate under Marital Status")+ylab("Attrition Rate")+xlab("Marital Status")
+#Monthly Income
+employeeData %>% ggplot(aes(x=MonthlyIncome,fill=Attrition))+ geom_bar(color="black",stat="bin",binwidth=500)+
+  ggtitle("Attrition count under different Monthly Income")+ylab("Attrition Count")+xlab("Monthly Income group")
+
+#Monthly Rate
+employeeData %>% ggplot(aes(x=MonthlyRate,fill=Attrition))+ geom_bar(color="black",stat="bin",binwidth=1000)+
+  ggtitle("Attrition count under different Monthly Rate")+ylab("Attrition Count")+xlab("Monthly Rate")
+#Numbers of Companies Worked
+employeeData %>% ggplot()+ geom_bar(aes(x=NumCompaniesWorked,fill=Attrition),position="fill")+
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition rate under different Number of Companies Worked before")+ylab("Attrition Rate")+xlab("Number of Companies Worked")
+# Over Time
+employeeData %>% ggplot()+ geom_bar(aes(x=OverTime,fill=Attrition),position="fill")+
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition rate vs Overtime")+ylab("Attrition Rate")+xlab("OverTime Or Not")
+
+#Percent Salary Hike
+employeeData %>% ggplot()+ geom_bar(aes(x=PercentSalaryHike,fill=Attrition),position="fill")+
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition rate under different Percent of Salary Hike")+ylab("Attrition Rate")+xlab("Percent of Salary Hike")
+#Performance Rating
+employeeData %>% ggplot()+ geom_bar(aes(x=PerformanceRating,fill=Attrition),position="fill")+
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition rate under different Performance Rating")+ylab("Attrition Rate")+xlab("Performance Rating")
+#Relationship Satisfaction
+employeeData %>% ggplot()+ geom_bar(aes(x=RelationshipSatisfaction,fill=Attrition),position="fill")+
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition rate under different Relationship Satisfaction Score")+ylab("Attrition Rate")+xlab("Relationship Satisfaction")
+#Stock Option Level
+employeeData %>% ggplot()+ geom_bar(aes(x=StockOptionLevel,fill=Attrition),position="fill")+
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition rate under different Stock Option Level")+ylab("Attrition Rate")+xlab("Stock Option Level")
+#Total Working Years
+employeeData %>% ggplot()+ geom_bar(aes(x=TotalWorkingYears,fill=Attrition),position="fill")+
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition rate vs Total Working Years")+ylab("Attrition Rate")+xlab("Total Working Years")
+#Training Times Last Year
+employeeData %>% ggplot()+ geom_bar(aes(x=TrainingTimesLastYear,fill=Attrition),position="fill")+
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition rate vs Training Times Last Year")+ylab("Attrition Rate")+xlab("Training Times Last Year")
+#Work Life Balance Score
+employeeData %>% ggplot()+ geom_bar(aes(x=WorkLifeBalance,fill=Attrition),position="fill")+
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition rate vs Work Life Balance Score")+ylab("Attrition Rate")+xlab("Work Life Balance Score")
+# Years At Company
+employeeData %>% ggplot()+ geom_bar(aes(x=YearsAtCompany,fill=Attrition),position="fill")+
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition rate vs. Years At Company")+ylab("Attrition Rate")+xlab("Years At Company")
+# Years in current Role
+employeeData %>% ggplot()+ geom_bar(aes(x=YearsInCurrentRole,fill=Attrition),position="fill")+
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition rate vs Years in Current Role")+ylab("Attrition Rate")+xlab("Years in current role")
+# Years Since Last Promotion
+employeeData %>% ggplot()+ geom_bar(aes(x=YearsSinceLastPromotion,fill=Attrition),position="fill")+
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition rate vs. Years Since last promotion")+ylab("Attrition Rate")+xlab("Years Since Last Promotion")
+# Years With Current Manager
+employeeData %>% ggplot()+ geom_bar(aes(x=YearsWithCurrManager,fill=Attrition),position="fill")+
+  scale_y_continuous(labels = scales::percent)+
+  ggtitle("Attrition rate vs. Years With Current Manager")+ylab("Attrition Rate")+xlab("Years With Current Manager")
+
+
+```
+
+#### Manuel Variable Selection for predicting Attrition
+- **Based on the results above, we have a basic understanding on what can affect attrition rate**
+- Visually inspecting all relevance, Job Involvement Levels, Job Roles, Overtime seem to have the most direct/significant correlation with Attrition Rate
+- Due to the amount of categorical variables involved, I consider Naive Bayes Classifier would make the best model to predict Attrition
+- Manually picking out variables used to predict Attrition based on the relationship explored above are below:
+- Age, Department, Education Level, Job Involvement, Job Level, Job Role, Job Satisfaction, Marital Status, Monthly Income, Number of Companies Worked, OverTime, Stock Option Level, Total Working Years, 
+Work Life Balance, Years at Company, Years in Current Role, Years With Current Manager
+
+#### Run a automated variable selection using caret - compare with my visual inspection
+- As we can see the top three most important variable according to the automated variable selection using caret are: OverTime, MonthlyIncome, TotalWorkingYears. Apparently, visually, we only got Overtime right in that sense.
+- According to the importance of variables, we can use the following variables to construct our Naive Bayes Model: OverTime, MonthlyIncome, TotalWorkingYears, YearsAtCompany, StockOptionLevel, MaritalStatus, JobLevel, YearsInCurrentRole, YearsWithCurrManager, Age, JobInvolvement, JobSatisfaction, JobRole, Department, all of these variables are confirmed by the above visual inspection. In addition, I want to add Education, WorkLifeBalance, Environment Satisfaction since they were confirmed of importance visually.
+```{r}
+#Load in libraries
+library(lattice)
+library(caret)
+library(mlbench)
+#prepare training scheme
+control = trainControl(method="repeatedcv", number=10, repeats=3)
+#train the model
+model = train(Attrition~.,data=employeeData,method="lvq",preProcess="scale", trControl=control)
+#estimate variable importance
+importance = varImp(model,scale=FALSE)
+#summarize importance
+print(importance)
+#plot importance
+plot(importance)
+
+```
+
+#### Extract variables select to build my NB model
+- Initial test we got Sensitivity rate of 85% correct, while Specificity at 70% correct. Overall Accuracy is around 83%.
+- By running 100 iterations, we get an average Accuracy rate of 81%, Average Sensitivity of 85%, and average Specificity of 61%.
+- This tells us it is possible for certain random combination to cause Specificity go below 60%, however this is due to chance, the overall prediction rate should be slighly greater than 60%.
+```{r}
+#Load NB libraries
+library(e1071)
+#select variables decided to predict Attrition
+data.nb = employeeData %>% select(Attrition, OverTime, MonthlyIncome, TotalWorkingYears, YearsAtCompany, StockOptionLevel, MaritalStatus, JobLevel, YearsInCurrentRole, YearsWithCurrManager, Age, JobInvolvement, JobSatisfaction, JobRole, Department,Education, WorkLifeBalance, EnvironmentSatisfaction)
+
+set.seed(12)
+splitPercent = 0.80
+trainIndex = sample(1:dim(data.nb)[1],round(splitPercent * dim(data.nb)[1]))
+train.nb = data.nb[trainIndex,]
+test.nb = data.nb[-trainIndex,]
+
+model.nb = naiveBayes(Attrition~.,data=train.nb, laplace = 1)
+predict.nb = predict(model.nb,test.nb)
+table(predict.nb,test.nb$Attrition)
+confusionMatrix(predict.nb,test.nb$Attrition)
+
+# Now I want to run 100 iterations to get an average accuracy, sensitivity, and specificity rate
+set.seed(13)
+iterations = 100
+masterAcc = matrix(nrow = iterations,ncol=3)
+splitPerc = .8 #Training / Test split Percentage
+for(j in 1:iterations)
+{
+  
+  trainIndices = sample(1:dim(data.nb)[1],round(splitPerc * dim(data.nb)[1]))
+  train = data.nb[trainIndices,]
+  test = data.nb[-trainIndices,]
+  
+  model = naiveBayes(Attrition~.,data=train,laplace = 1)
+  CM = confusionMatrix(table(predict(model,test),test$Attrition))
+  masterAcc[j,1] = CM$overall[1]
+  masterAcc[j,2]=CM$byClass[1]
+  masterAcc[j,3] = CM$byClass[2]
+}
+
+MeanAcc = colMeans(masterAcc)
+#Mean Accuracy Sensitivity and Specificity
+MeanAcc
+```
+
+#### We will now read in CaseStudy2CompSet No Attrition.csv and get a prediction result under Case2PredictionsYU Attrition.csv
+```{r}
+#read in data of no Attrition
+noAttrition = read.csv("/Users/mingyang/Desktop/SMU/DoingDS_Fall2020/CaseStudy2DDS/CaseStudy2CompSet No Attrition.csv",header = TRUE)
+head(noAttrition)
+#Change certain column to factors
+cols.to.factor2 = c("BusinessTravel","Department","EducationField","EnvironmentSatisfaction",
+                   "Gender","JobInvolvement","JobLevel","JobRole","JobSatisfaction","MaritalStatus","NumCompaniesWorked",
+                   "OverTime","PerformanceRating","RelationshipSatisfaction","StockOptionLevel","TrainingTimesLastYear",
+                   "WorkLifeBalance")
+noAttrition[cols.to.factor2] = lapply(noAttrition[cols.to.factor2],factor)
+#Create prediction set
+predictionSet = noAttrition %>% select(OverTime, MonthlyIncome, TotalWorkingYears, YearsAtCompany, StockOptionLevel, MaritalStatus, JobLevel, YearsInCurrentRole, YearsWithCurrManager, Age, JobInvolvement, JobSatisfaction, JobRole, Department,Education, WorkLifeBalance, EnvironmentSatisfaction)
+
+#Retrain the NB model with entire dataset to improve prediction accuracy
+model.nb = naiveBayes(Attrition~.,data=data.nb, laplace = 1)
+prediction.NoAttrition = predict(model.nb,noAttrition)
+noAttrition$Attrition = prediction.NoAttrition
+results = noAttrition%>%select(ID,Attrition)
+#write results into Case2PredictionsYU Attrition.csv
+write.csv(results,"Case2PredictionsYU Attrition.csv",row.names = FALSE)
+
+```
+
+### Now, we'd like to predict Montly Income with Multiple Linear Regression
+- I used internal 10-fold cross-validation accompanied with Stepwise selection using AIC to find the optimal multi-linear regression model
+- RMSE using 10-fold cross-validation is 1025.488
+- As we can see we got Adjusted R-squared of 0.9532 of our model, which is pretty good
+- As we have used this optimized model to generate predictions for Monthly Salary for CaseStudy2CompSet No Salary.csv, and exported to Case2PredictionsYU Salary.csv
+```{r}
+#Load library to run stepwise regression method to choose an optimal simple model
+library(MASS)
+
+#Build the model with internel verfication 
+train.control <- trainControl(method = "cv", number = 10)
+step.model = train(MonthlyIncome~., data=employeeData,
+                   method="lmStepAIC",
+                   trControl = train.control,
+                   trace=FALSE)
+#Model Accuracy
+step.model$results
+step.model$finalModel
+summary(step.model$finalModel)
+
+#load in CaseStudy2CompSet No Salary.csv to predict monthly salary
+noSalary = read.csv("/Users/mingyang/Desktop/SMU/DoingDS_Fall2020/CaseStudy2DDS/CaseStudy2CompSet No Salary.csv",header = TRUE)
+cols.to.factor3 = c("Attrition","BusinessTravel","Department","EducationField","EnvironmentSatisfaction",
+                   "Gender","JobInvolvement","JobLevel","JobRole","JobSatisfaction","MaritalStatus","NumCompaniesWorked",
+                   "OverTime","PerformanceRating","RelationshipSatisfaction","StockOptionLevel","TrainingTimesLastYear",
+                   "WorkLifeBalance")
+noSalary[cols.to.factor] = lapply(noSalary[cols.to.factor],factor)
+prediction.monthlyS = predict(step.model,noSalary)
+prediction.monthlyS
+
+noSalary$MonthlyIncome = prediction.monthlyS
+results1 = data.frame(noSalary$ID,noSalary$MonthlyIncome)
+#Write results1 to CaseStudy2CompSet No Salary.csv
+write.csv(results1,"Case2PredictionsYU Salary.csv",row.names = FALSE)
+
+```
+
+### Now we'd like to see some job role specific trend within the data
+- Healthcare Representation has the highest average Job Satisfaction Score
+- Research Director has the lowest average Job Satisfaction Score
+```{r}
+#Look at all the job roles
+unique(employeeData$JobRole)
+#Loading in Employee data
+employeeData = read.csv("/Users/mingyang/Desktop/SMU/DoingDS_Fall2020/CaseStudy2DDS/CaseStudy2-data.csv",header = TRUE)
+#summary(employeeData)
+
+#See which column has only unique value
+#sapply(employeeData,function(col) length(unique(col)))
+
+#Delete column that has only one unique value
+to.be.deleted = which(sapply(employeeData,function(col) length(unique(col))==1))
+employeeData = employeeData[,-to.be.deleted]
+satisfaction.by.jobrole = employeeData %>% group_by(JobRole) %>% summarize(mean(JobSatisfaction))
+#Change Column name
+names(satisfaction.by.jobrole)[2]="JobSatisfaction"
+satisfaction.by.jobrole
+satisfaction.by.jobrole%>% ggplot(aes(reorder(JobRole,JobSatisfaction),JobSatisfaction))+
+  geom_bar(fill="blue",stat="identity") +
+  ggtitle("Job role vs Average Job Satisfaction Score")+
+  xlab("Job Roles")+ ylab("Average Job Satisfaction Score")+
+  coord_flip()
+```
+
+### This part I want to explore which Job Role has better Work Life Balance Score
+- According to our graph, HumanResources has the highest Work Life Balance Score
+- Healthcare Representative has the lowest Work Life Balance Score, however we know from above, they have the highest Job Satisfaction!
+```{r}
+work.life.balance = employeeData %>% group_by(JobRole) %>% summarize(mean(WorkLifeBalance))
+names(work.life.balance)[2]="WorkLifeBalance"
+work.life.balance
+work.life.balance%>% ggplot(aes(reorder(JobRole,WorkLifeBalance),WorkLifeBalance))+
+  geom_bar(fill="blue",stat="identity") +
+  ggtitle("Job role vs Average Work Life Balance Score")+
+  xlab("Job Roles")+ ylab("Average Work Life Balance Score")+
+  coord_flip()
+
+```
+
+### This Section I want to explore if there are possible Gender Discrimination in the workplace based on Monthly salary
+- Null Hypothesis: There is no Gender Discrimination Mu(Male) = Mu(Female)
+- Alternative Hypothesis: There is significant evidence of gender discrimination, Mu(Male)!=Mu(Female)
+- Using alpha = 0.05, By doing a welch t-test, we failed to reject Null, which means 0 is plausible value between the two mean differences. It is telling us the difference of Monthly Income between gender is not significantly different from 0.
+- Conclusion: The Female group actually has a higher mean of Monthly Income compared to Male 
+- Scope: Not sure how these data is sampled, any inference to the population need to remain speculative
+```{r}
+t.test(MonthlyIncome ~ Gender, data = employeeData, conf.level=0.95)
+
+```
+
+### This Section I will explore if there are differences between Percentage Salary Hike between Gender
+- Null Hypothesis: There is no difference of percentage salary hike between Gender
+- Alternative Hypothesis: There are significant difference of percentage salary hike between Male and Female
+- Conclusion: by using alpha = 0.05 level of significance, we discovered that there is no difference of percentage salary hike between Gender
+- Scope: Not sure how these data is sampled, any inference to the population need to remain speculative
+
+```{r}
+t.test(PercentSalaryHike~Gender,data=employeeData,conf.level=0.95)
+```
+
+### This Section to explore some relationship between continuous variables
+- By exploring the pairwise continuous variables, it doesn't seem like any two variables has strongo correlation
+- For example: between MonthlyIncome and PercentSalaryHike, under any MonthlyIncome range, there are various PercentSalaryHike range available, so, maybe it is based on employee performance to determine a specific PercentSalaryHike
+- More years at the company will in general correlates to more Monthly Income in a positive direction. However, Job Roles seem to have a bigger effect on beginning Monthly Salary. Some High Paying Jobs have lower percentage increase compared to some other roles that start at a lower Monthly Income Salary, such as, Manager or Research Director have high start salary, but the percentage increase as the years at the company increases is low. While Healthcare Representative and Manufacturing Director have lower beggining monthly Income, but the percentage increase as the year goes by is significantly higher.
+```{r}
+#import library 
+library(GGally)
+
+employeeData %>% dplyr::select(HourlyRate, MonthlyIncome, MonthlyRate,PercentSalaryHike)%>%
+  ggpairs()
+
+#Does more years in the company result in higher MonthlyIncome?
+employeeData%>% dplyr::select(YearsAtCompany,MonthlyIncome,JobRole)%>%
+  ggplot(aes(x=YearsAtCompany,y=MonthlyIncome,color=JobRole))+
+  geom_point()+
+  geom_smooth(method='lm',formula=y~x) + ggtitle("MonthlyIncome vs Years At Company across different Job Roles")+
+  xlab("Years At Company")+ylab("Monthly Income")
+```
+
+
+### Conclusion
+- By exploring importance of variables using automated software, we have found OverTime, MonthlyIncome, TotalWorkingYears, to have the highest relations with Attrition, visually however, we see more relations with Job Involvement Levels, Job Roles, Overtime. We were able to build a prediction model using Naive Bayes, by using variables that have stronger relations to predict Attrition, with an average Accuracy rate around 81%.
+- By using internal 10-fold cross-validation accompanied with Stepwise automated selection, I found the optimal multi-linear regression model to predict MonthlyIncome. The model has generated 0.9532 adjusted r-squared value, which tells me the correlation between MonthlyIncome and the predictors generated by stepwise selection are very good.
+- I further analyzed several factors of Job Roles that Frito Lay is interested in exploring and found Healthcare Representation has the highest average Job Satisfaction Score, while HumanResources has the highest Work Life Balance Score.
+- No gender discrimination has been found based on Monthly Income and Percentage Salary Hike according to my statistical analysis with the data that is provided.
+
+
+
+
+
