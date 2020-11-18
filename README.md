@@ -10,7 +10,7 @@
 #### PPTX: This is my presentation deck, to summarize findings to present to CEO and CFO of Frito Lay
 #### In order to successfully run the RMD file, you need to download corresponding libraries that are used in the RMD file
 #### This project can be found under github link: https://github.com/nickmingyang/CaseStudy2DDS
-#### YouTube Presentation by Nick YU: 
+#### YouTube Presentation by Nick YU: https://www.youtube.com/watch?v=Kqn0OqW8Avk
 
 ### Conclusion:
 

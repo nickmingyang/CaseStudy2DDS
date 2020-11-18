@@ -15,6 +15,7 @@ knitr::opts_chunk$set(warning=FALSE)
 ### Introduction to the Project
 - DDSAnalytics that specializes in talent management solutions for Fortune 100 companies. This is a process of developing and retaining employees. It may include workforce planning, employee training programs, identifying high-potential employees and reducing/preventing voluntary employee turnover (attrition). To gain a competitive edge over its competition, DDSAnalytics is planning to leverage data science for talent management. The executive leadership has identified predicting employee turnover as its first application of data science for talent management. Before the business gree lights the project, they have tasked me to conduct an analysis of existing employee data.
 - I have been provided (CaseStudy2-data.csv) to do a data analysis to identify factors that lead to attrition. I need to identify the top three factors that contribute to turnover. The business is also interested in learning about any job role specific trends that may exist in the data set.
+- **YouTube Presentation: https://www.youtube.com/watch?v=Kqn0OqW8Avk**
 
 ### Importing Data & Initial Inspection
 - There are 870 data entries
@@ -316,6 +317,7 @@ write.csv(results,"Case2PredictionsYU Attrition.csv",row.names = FALSE)
 library(MASS)
 
 #Build the model with internel verfication 
+set.seed(24)
 train.control <- trainControl(method = "cv", number = 10)
 step.model = train(MonthlyIncome~., data=employeeData,
                    method="lmStepAIC",
@@ -337,7 +339,7 @@ prediction.monthlyS = predict(step.model,noSalary)
 prediction.monthlyS
 
 noSalary$MonthlyIncome = prediction.monthlyS
-results1 = data.frame(noSalary$ID,noSalary$MonthlyIncome)
+results1 = noSalary%>% dplyr::select(ID,MonthlyIncome)
 #Write results1 to CaseStudy2CompSet No Salary.csv
 write.csv(results1,"Case2PredictionsYU Salary.csv",row.names = FALSE)
 
@@ -388,8 +390,8 @@ work.life.balance%>% ggplot(aes(reorder(JobRole,WorkLifeBalance),WorkLifeBalance
 ### This Section I want to explore if there are possible Gender Discrimination in the workplace based on Monthly salary
 - Null Hypothesis: There is no Gender Discrimination Mu(Male) = Mu(Female)
 - Alternative Hypothesis: There is significant evidence of gender discrimination, Mu(Male)!=Mu(Female)
-- Using alpha = 0.05, By doing a welch t-test, we failed to reject Null, which means 0 is plausible value between the two mean differences. It is telling us the difference of Monthly Income between gender is not significantly different from 0.
-- Conclusion: The Female group actually has a higher mean of Monthly Income compared to Male 
+- Using alpha = 0.05, By doing a welch t-test, we have found no significant difference between population mean (p-value = 0.11), which means 0 is plausible value between the two mean differences with a 95% confidence interval. 
+- The Female group has a higher mean of Monthly Income compared to Male 
 - Scope: Not sure how these data is sampled, any inference to the population need to remain speculative
 ```{r}
 t.test(MonthlyIncome ~ Gender, data = employeeData, conf.level=0.95)
@@ -399,7 +401,7 @@ t.test(MonthlyIncome ~ Gender, data = employeeData, conf.level=0.95)
 ### This Section I will explore if there are differences between Percentage Salary Hike between Gender
 - Null Hypothesis: There is no difference of percentage salary hike between Gender
 - Alternative Hypothesis: There are significant difference of percentage salary hike between Male and Female
-- Conclusion: by using alpha = 0.05 level of significance, we discovered that there is no difference of percentage salary hike between Gender
+- Conclusion: by using alpha = 0.05 level of significance, we discovered that there is no significant difference (p-value=0.91) of percentage salary hike between Gender
 - Scope: Not sure how these data is sampled, any inference to the population need to remain speculative
 
 ```{r}
