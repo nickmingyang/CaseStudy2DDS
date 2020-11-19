@@ -15,7 +15,7 @@ knitr::opts_chunk$set(warning=FALSE)
 ### Introduction to the Project
 - DDSAnalytics that specializes in talent management solutions for Fortune 100 companies. This is a process of developing and retaining employees. It may include workforce planning, employee training programs, identifying high-potential employees and reducing/preventing voluntary employee turnover (attrition). To gain a competitive edge over its competition, DDSAnalytics is planning to leverage data science for talent management. The executive leadership has identified predicting employee turnover as its first application of data science for talent management. Before the business gree lights the project, they have tasked me to conduct an analysis of existing employee data.
 - I have been provided (CaseStudy2-data.csv) to do a data analysis to identify factors that lead to attrition. I need to identify the top three factors that contribute to turnover. The business is also interested in learning about any job role specific trends that may exist in the data set.
-- **YouTube Presentation: https://www.youtube.com/watch?v=Kqn0OqW8Avk**
+- **YouTube Presentation: https://www.youtube.com/watch?v=Te3EcaLsR48**
 
 ### Importing Data & Initial Inspection
 - There are 870 data entries
